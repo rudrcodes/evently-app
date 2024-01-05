@@ -1,7 +1,6 @@
 import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
-import { emailAddresses } from '@clerk/nextjs/api'
 import { createUser, deleteUser, updateUser } from '@/lib/actions/user.actions'
 import { clerkClient } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
@@ -55,23 +54,18 @@ export async function POST(req: Request) {
     const { id } = evt.data;
     const eventType = evt.type;
 
-    // if the event triggered is : creation of user.
     if (eventType === 'user.created') {
         const { id, email_addresses, image_url, first_name, last_name, username } = evt.data;
-
 
         const user = {
             clerkId: id,
             email: email_addresses[0].email_address,
             username: username!,
-            //* In TypeScript, adding an exclamation mark (!) at the end of a value is known as the non-null assertion operator. It is used to tell the TypeScript compiler that you are certain that the value is not null or undefined, even if TypeScript's type system cannot guarantee it.
-            //* The '!' in the end converts tha value to non-null   
-            // username: username as string -> this will also work,
             firstName: first_name,
             lastName: last_name,
             photo: image_url,
         }
-        //creating a new user in the mongoDB from the details got from the clerk event
+
         const newUser = await createUser(user);
 
         if (newUser) {
@@ -109,10 +103,4 @@ export async function POST(req: Request) {
     }
 
     return new Response('', { status: 200 })
-}
-
-console.log(`Webhook with and ID of ${id} and type of ${eventType}`)
-console.log('Webhook body:', body)
-
-return new Response('', { status: 200 })
 }
